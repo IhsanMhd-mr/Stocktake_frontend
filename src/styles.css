@@ -591,3 +591,25 @@ input:disabled, select:disabled, textarea:disabled { background: #eef1ed; }
   .side-counts { justify-content: flex-start; }
   .compact-form.horizontal, .range-row { grid-template-columns: 1fr; }
 }
+
+/* Redesigned Preparation UI */
+.redesigned-preparation { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+.step-indicator { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; color: #64748b; font-weight: 500; }
+.step-indicator a { color: #64748b; text-decoration: none; }
+.step-indicator a:hover { color: #0284c7; }
+.step-indicator strong { color: #0284c7; }
+.rack-design-container { display: flex; flex-direction: column; gap: 2rem; margin-top: 2rem; }
+.rack-sides-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.side-block { background: white; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 1.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; gap: 1rem; }
+.side-block.designed { border-style: solid; border-color: #0284c7; background: #f0f9ff; }
+.side-block.editing { border-style: solid; border-color: #e2e8f0; background: white; }
+.side-block h3 { margin: 0; font-size: 1.25rem; color: #0f172a; }
+.side-block p { margin: 0; color: #475569; }
+.arrangement-toggle { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem; }
+.side-block form { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; text-align: left; }
+.side-block form label { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; font-weight: 500; }
+.side-block form input[type="number"] { width: 80px; padding: 0.25rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+.finalize-section { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2rem; }
+.side-checks { display: flex; gap: 1.5rem; font-weight: 500; margin-bottom: 1rem; }
+.compact-unit-card .simplified-status { color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 1.5rem 0; font-weight: 500; }
+

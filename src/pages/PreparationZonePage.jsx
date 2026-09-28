@@ -27,7 +27,7 @@ export function PreparationZonePage() {
   };
   return <>
     <Link className="back-link" to="/preparation">← Prepare Store</Link>
-    <div className="page-heading minimal-heading"><div><h1>{zone?.name || 'Zone'}</h1><span>{zone?.code}</span></div><RefreshButton onClick={() => view.refresh().catch(() => {})} refreshing={view.refreshing} /></div>
+    <div className="page-heading minimal-heading"><div><h1>{zone?.name || 'Zone'}</h1></div><RefreshButton onClick={() => view.refresh().catch(() => {})} refreshing={view.refreshing} /></div>
     {zone && <div className="toolbar"><button className="button button-primary" onClick={() => { setEditingUnit(null); setForm('unit'); }}>+ Add Rack or Basket</button><button className="button button-secondary" onClick={() => setForm('zone')}>Edit Zone</button></div>}
     {mutationError && <div className="alert alert-error">{mutationError.message}</div>}
     {form === 'zone' && <section className="card form-panel"><ZoneForm zone={zone} saving={saving} onCancel={() => setForm(null)} onSave={(payload) => mutate(() => preparationApi.updateZone(zone.id, payload))} /></section>}

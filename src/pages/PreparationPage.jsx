@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { preparationApi, loadPreparationOverview } from '../api/preparation.api.js';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '../components/common.jsx';
+import { EmptyState, ErrorState, LoadingState } from '../components/common.jsx';
 import { PreparationUnitCard, UnitForm, ZoneForm } from '../components/preparation.jsx';
 import { useRealtimeRefresh } from '../hooks/useRealtimeRefresh.js';
 import { useRefreshableData } from '../hooks/useRefreshableData.js';
@@ -48,9 +48,22 @@ export function PreparationPage() {
     {view.error && !view.data && <ErrorState error={view.error} onRetry={() => view.refresh().catch(() => {})} />}
     {view.error && view.data && <div className="alert alert-warning">Refresh failed. Showing the last successful Preparation snapshot.</div>}
     {view.data && !zones.length && <EmptyState title="No Zones available">Create a Zone to begin preparing physical Units.</EmptyState>}
-    <div className="preparation-zones">{zones.map((zone) => {
-      const preparationCount = zone.units.filter((unit) => unit.status === 'PREPARATION').length;
-      return <section className="card zone-management" key={zone.id}><div className="zone-management-heading"><div><p className="eyebrow">{zone.code}</p><h2>{zone.name}</h2><div className="inline-badges"><StatusBadge value="PREPARATION" /><span>{preparationCount}</span><StatusBadge value="STOCK_TAKE" /><span>{zone.units.length - preparationCount}</span></div></div><div className="card-actions"><Link className="button button-primary" to={`/preparation/zones/${zone.id}`}>Open</Link><button className="button button-secondary" onClick={() => openEditZone(zone)}>Edit</button></div></div><div className="management-unit-grid">{zone.units.map((unit) => <PreparationUnitCard key={unit.id} unit={unit} onEdit={openEditUnit} />)}</div>{!zone.units.length && <p className="muted">No physical Units in this Zone.</p>}</section>;
-    })}</div>
+    <div className="preparation-zones">{zones.map((zone) => (
+      <section className="card zone-management" key={zone.id}>
+        <div className="zone-management-heading">
+          <div>
+            <h2>{zone.name}</h2>
+          </div>
+          <div className="card-actions">
+            <Link className="button button-primary" to={`/preparation/zones/${zone.id}`}>Open</Link>
+            <button className="button button-secondary" onClick={() => openEditZone(zone)}>Edit</button>
+          </div>
+        </div>
+        <div className="management-unit-grid">
+          {zone.units.map((unit) => <PreparationUnitCard key={unit.id} unit={unit} onEdit={openEditUnit} />)}
+        </div>
+        {!zone.units.length && <p className="muted">No physical Units in this Zone.</p>}
+      </section>
+    ))}</div>
   </>;
 }
