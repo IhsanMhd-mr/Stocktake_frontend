@@ -47,7 +47,7 @@ export function UnitForm({ zones, unit, initialZoneId, initialType = 'RACK', onS
   );
 }
 
-export function PreparationUnitCard({ unit, onEdit }) {
+export function PreparationUnitCard({ unit, onEdit, onCustomBins }) {
   const summary = unit.preparation?.summary || {};
   const isRack = unit.unitType === 'RACK';
   const designedStatus = isRack 
@@ -65,10 +65,47 @@ export function PreparationUnitCard({ unit, onEdit }) {
       <p className="simplified-status">{designedStatus}</p>
       <div className="card-actions">
         <Link className="button button-primary" to={`/preparation/units/${unit.id}`}>
-          {unit.status === 'PREPARATION' ? (isRack ? 'Design' : 'Prepare') : 'View'}
+          {unit.status === 'PREPARATION' ? 'Design' : 'View'}
         </Link>
-        {unit.status === 'PREPARATION' && <button className="button button-secondary" type="button" onClick={() => onEdit(unit)}>Edit Name</button>}
+        {unit.status === 'PREPARATION' && (
+          <button className="button button-secondary" type="button" onClick={() => onEdit(unit)}>Edit Name</button>
+        )}
+        {unit.status === 'PREPARATION' && isRack && (
+          <button className="button button-secondary" type="button" onClick={() => onCustomBins(unit)}>Custom Bins</button>
+        )}
       </div>
     </article>
+  );
+}
+
+export function CustomBinsForm({ unit, onSave, onCancel, saving }) {
+  const [position, setPosition] = useState('FRONT');
+  const [count, setCount] = useState(10);
+  const submit = (event) => {
+    event.preventDefault();
+    onSave({ position, count: Number(count) });
+  };
+  return (
+    <form className="management-form" onSubmit={submit}>
+      <h2>Add Custom Bins</h2>
+      <p>Rack<br/><strong>{unit.name || unit.code}</strong></p>
+      <div className="form-grid">
+        <label>Position
+          <select value={position} onChange={(e) => setPosition(e.target.value)}>
+            <option value="FRONT">FRONT</option>
+            <option value="RIGHT">RIGHT</option>
+            <option value="BACK">BACK</option>
+            <option value="LEFT">LEFT</option>
+          </select>
+        </label>
+        <label>Number of bins
+          <input type="number" min="1" max="1000" value={count} required onChange={(e) => setCount(e.target.value)} />
+        </label>
+      </div>
+      <div className="form-actions gap">
+        <button type="button" className="button button-secondary" onClick={onCancel} disabled={saving}>Cancel</button>
+        <button className="button button-primary" disabled={saving}>Add {count} Bins</button>
+      </div>
+    </form>
   );
 }

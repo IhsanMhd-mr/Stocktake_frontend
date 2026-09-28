@@ -78,3 +78,15 @@ export async function applySideDesign(unitId, existingSide, config) {
     }
   }
 }
+
+export async function addCustomBins(unitId, existingSide, sideType, count) {
+  let sideId;
+  if (!existingSide) {
+    const displayOrder = ['FRONT', 'RIGHT', 'BACK', 'LEFT'].indexOf(sideType);
+    const newSide = await preparationApi.createSide(unitId, { sideType, displayOrder: displayOrder >= 0 ? displayOrder : 0 });
+    sideId = newSide.id;
+  } else {
+    sideId = existingSide.id;
+  }
+  await preparationApi.generateSideBins(sideId, count);
+}

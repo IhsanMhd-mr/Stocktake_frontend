@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { preparationApi } from '../api/preparation.api.js';
 import { EmptyState, ErrorState, LoadingState, RefreshButton } from '../components/common.jsx';
-import { PreparationUnitCard, UnitForm, ZoneForm } from '../components/preparation.jsx';
+import { PreparationUnitCard, UnitForm, ZoneForm, CustomBinsForm } from '../components/preparation.jsx';
 import { useRefreshableData } from '../hooks/useRefreshableData.js';
+import { addCustomBins } from '../services/rack-builder.js';
 
 async function loadZone(zoneId) {
   const [zone, units] = await Promise.all([preparationApi.getZone(zoneId), preparationApi.listUnits(zoneId)]);
@@ -15,14 +16,15 @@ export function PreparationZonePage() {
   const view = useRefreshableData(() => loadZone(zoneId), [zoneId]);
   const [form, setForm] = useState(null);
   const [editingUnit, setEditingUnit] = useState(null);
+  const [customBinsUnit, setCustomBinsUnit] = useState(null);
   const [saving, setSaving] = useState(false);
   const [mutationError, setMutationError] = useState(null);
   const zone = view.data?.zone;
 
   const mutate = async (work) => {
     setSaving(true); setMutationError(null);
-    try { await work(); setForm(null); setEditingUnit(null); await view.refresh(); }
-    catch (error) { setMutationError(error); if (error.code === 'STALE_VERSION') { setForm(null); setEditingUnit(null); await view.refresh().catch(() => {}); } }
+    try { await work(); setForm(null); setEditingUnit(null); setCustomBinsUnit(null); await view.refresh(); }
+    catch (error) { setMutationError(error); if (error.code === 'STALE_VERSION') { setForm(null); setEditingUnit(null); setCustomBinsUnit(null); await view.refresh().catch(() => {}); } }
     finally { setSaving(false); }
   };
   return <>
@@ -32,10 +34,22 @@ export function PreparationZonePage() {
     {mutationError && <div className="alert alert-error">{mutationError.message}</div>}
     {form === 'zone' && <section className="card form-panel"><ZoneForm zone={zone} saving={saving} onCancel={() => setForm(null)} onSave={(payload) => mutate(() => preparationApi.updateZone(zone.id, payload))} /></section>}
     {form === 'unit' && <section className="card form-panel"><UnitForm zones={zone ? [zone] : []} initialZoneId={zoneId} unit={editingUnit} saving={saving} onCancel={() => { setForm(null); setEditingUnit(null); }} onSave={({ zoneId: selectedZoneId, data }) => mutate(() => editingUnit ? preparationApi.updateUnit(editingUnit.id, data) : preparationApi.createUnit(selectedZoneId, data))} /></section>}
+    
+    {customBinsUnit && (
+      <section className="card form-panel">
+        <CustomBinsForm 
+          unit={customBinsUnit} 
+          saving={saving} 
+          onCancel={() => setCustomBinsUnit(null)} 
+          onSave={({ position, count }) => mutate(() => addCustomBins(customBinsUnit.id, customBinsUnit.preparation.sides.find(s => s.sideType === position), position, count))} 
+        />
+      </section>
+    )}
+
     {view.loading && <LoadingState />}
     {view.error && !view.data && <ErrorState error={view.error} onRetry={() => view.refresh().catch(() => {})} />}
     {view.error && view.data && <div className="alert alert-warning">Refresh failed. Showing the last successful Zone snapshot.</div>}
     {view.data && !view.data.units.length && <EmptyState title="No Racks or Baskets." />}
-    <div className="management-unit-grid">{view.data?.units.map((unit) => <PreparationUnitCard key={unit.id} unit={unit} onEdit={(selected) => { setEditingUnit(selected); setForm('unit'); }} />)}</div>
+    <div className="management-unit-grid">{view.data?.units.map((unit) => <PreparationUnitCard key={unit.id} unit={unit} onEdit={(selected) => { setEditingUnit(selected); setForm('unit'); }} onCustomBins={() => setCustomBinsUnit(unit)} />)}</div>
   </>;
 }
