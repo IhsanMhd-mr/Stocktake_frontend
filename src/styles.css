@@ -613,3 +613,15 @@ input:disabled, select:disabled, textarea:disabled { background: #eef1ed; }
 .side-checks { display: flex; gap: 1.5rem; font-weight: 500; margin-bottom: 1rem; }
 .compact-unit-card .simplified-status { color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 1.5rem 0; font-weight: 500; }
 
+@media (max-width: 680px) {
+  .redesigned-preparation { padding: 1.25rem 0.75rem; }
+  .rack-design-container { gap: 1.25rem; }
+  .rack-sides-row { grid-template-columns: 1fr; }
+  .side-checks { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+  .arrangement-toggle { flex-wrap: wrap; }
+  .step-indicator { flex-wrap: wrap; }
+  .finalize-section { padding: 1.25rem; }
+  .side-block { min-height: auto; padding: 1.25rem; }
+  .side-block form label { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+  .side-block form input[type="number"] { width: 100%; }
+}
