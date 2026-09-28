@@ -5,6 +5,7 @@ import { useAuth } from '../auth/useAuth.js';
 import { RealtimeContext } from './RealtimeContext.js';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || new URL(API_BASE_URL, window.location.origin).origin;
+const realtimeEnabled = import.meta.env.VITE_ENABLE_REALTIME !== 'false';
 
 export function RealtimeProvider({ children }) {
   const { token, user, restoring } = useAuth();
@@ -14,7 +15,7 @@ export function RealtimeProvider({ children }) {
   const isAdmin = user && ['ADMIN', 'SUPER_ADMIN'].includes(user.role);
 
   useEffect(() => {
-    if (restoring || !token || !isAdmin) return undefined;
+    if (restoring || !token || !isAdmin || !realtimeEnabled) return undefined;
     const socket = io(SOCKET_URL, { auth: { token } });
     socketRef.current = socket;
     socket.on('connect', () => setConnected(true));
