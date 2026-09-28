@@ -7,6 +7,12 @@ import { useRealtimeRefresh } from '../hooks/useRealtimeRefresh.js';
 import { useRefreshableData } from '../hooks/useRefreshableData.js';
 import { useRealtime } from '../realtime/RealtimeContext.js';
 
+function ConfirmAction({ label, message, onConfirm, disabled = false, primary = false }) {
+  const [confirming, setConfirming] = useState(false);
+  if (!confirming) return <button type="button" className={`button ${primary ? 'button-primary' : 'button-secondary'}`} disabled={disabled} onClick={() => setConfirming(true)}>{label}</button>;
+  return <div className="inline-confirm" style={{display:'flex',gap:'0.5rem',justifyContent:'center',alignItems:'center'}}><span>{message}</span><button type="button" className="button button-secondary" onClick={() => setConfirming(false)}>Cancel</button><button type="button" className="button button-primary" onClick={() => { setConfirming(false); onConfirm(); }}>Confirm</button></div>;
+}
+
 const PREPARATION_ENTITIES = new Set(['ZONE', 'UNIT', 'SIDE', 'BIN', 'BAY', 'SHELF', 'SHELF_BIN']);
 
 export function PreparationPage() {
@@ -15,11 +21,28 @@ export function PreparationPage() {
   const [form, setForm] = useState(null);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
   const [mutationError, setMutationError] = useState(null);
   const [newUnitType, setNewUnitType] = useState('RACK');
   useRealtimeRefresh(lastEvent, (event) => PREPARATION_ENTITIES.has(event.entityType), view.refresh, 300);
 
   const zones = view.data || [];
+  const allUnits = zones.flatMap(z => z.units);
+  const pendingUnits = allUnits.filter(u => u.status === 'PREPARATION');
+
+  const finalizePhase = async () => {
+    setFinalizing(true);
+    setMutationError(null);
+    try {
+      await Promise.all(pendingUnits.map(u => preparationApi.finalizeUnit(u.id)));
+      await view.refresh();
+    } catch (error) {
+      setMutationError(error);
+    } finally {
+      setFinalizing(false);
+    }
+  };
+
   const saveZone = async (payload) => {
     setSaving(true); setMutationError(null);
     try {
@@ -65,5 +88,29 @@ export function PreparationPage() {
         {!zone.units.length && <p className="muted">No physical Units in this Zone.</p>}
       </section>
     ))}</div>
+
+    {zones.length > 0 && (
+      <section className="card finalize-section" style={{ marginTop: '2rem', textAlign: 'center' }}>
+        <h2>Ready to start?</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', margin: '1.5rem 0', fontSize: '1.25rem' }}>
+          <div><strong>{zones.length}</strong> Zones</div>
+          <div><strong>{allUnits.filter(u => u.unitType === 'RACK').length}</strong> Racks</div>
+          <div><strong>{allUnits.filter(u => u.unitType === 'BASKET').length}</strong> Baskets</div>
+          <div><strong>{allUnits.reduce((acc, u) => acc + (u.preparation?.summary?.binCount || u.binCount || 0), 0)}</strong> Bins</div>
+        </div>
+        
+        {pendingUnits.length > 0 ? (
+          <ConfirmAction 
+            label="Lock & Start Stock Take" 
+            message="Freeze preparation and begin Stock Take?" 
+            onConfirm={finalizePhase} 
+            primary={true} 
+            disabled={finalizing} 
+          />
+        ) : (
+          <strong className="done-state" style={{fontSize: '1.2rem', color: '#10b981'}}>✓ Stock Take Started</strong>
+        )}
+      </section>
+    )}
   </>;
 }

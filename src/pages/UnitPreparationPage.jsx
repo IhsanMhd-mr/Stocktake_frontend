@@ -5,11 +5,6 @@ import { applySideDesign, addCustomBins } from '../services/rack-builder.js';
 import { ErrorState, LoadingState, StatusBadge } from '../components/common.jsx';
 import { useRefreshableData } from '../hooks/useRefreshableData.js';
 
-function ConfirmAction({ label, message, onConfirm, disabled = false, primary = false }) {
-  const [confirming, setConfirming] = useState(false);
-  if (!confirming) return <button type="button" className={`button ${primary ? 'button-primary' : 'button-secondary'}`} disabled={disabled} onClick={() => setConfirming(true)}>{label}</button>;
-  return <div className="inline-confirm"><span>{message}</span><button type="button" className="button button-secondary" onClick={() => setConfirming(false)}>Cancel</button><button type="button" className="button button-primary" onClick={() => { setConfirming(false); onConfirm(); }}>Confirm</button></div>;
-}
 
 function BasketDesignBlock({ unit, data, onGenerate, saving, mutable }) {
   const [mode, setMode] = useState(data.summary.binCount > 0 ? 'view' : 'design');
@@ -266,20 +261,7 @@ export function UnitPreparationPage() {
     }
   };
 
-  const finalize = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      await preparationApi.finalizeUnit(unitId);
-      await view.refresh();
-    } catch (error) {
-      console.error(error);
-      setError("Couldn't finalize.");
-    } finally {
-      setSaving(false);
-    }
-  };
-  
+
   const generateBasketBins = async (count) => {
     setSaving(true); setError(null);
     try {
@@ -320,13 +302,8 @@ export function UnitPreparationPage() {
               mutable={mutable} 
             />
           </div>
-          <div className="finalize-section card">
-            <p className="eyebrow">Ready?</p>
-            {mutable ? (
-              <ConfirmAction label="Lock & Start Stock Take" message="Ready to start?" onConfirm={finalize} primary={true} disabled={saving || !data.summary.binCount} />
-            ) : (
-              <strong className="done-state">✓ Started</strong>
-            )}
+          <div className="finalize-section card" style={{textAlign: 'center'}}>
+             <Link className="button button-primary" to={`/preparation/zones/${data.unit.zoneId}`}>Next</Link>
           </div>
         </section>
       ) : (
@@ -344,19 +321,8 @@ export function UnitPreparationPage() {
                />
             ))}
           </div>
-
-          <div className="finalize-section card">
-            <p className="eyebrow">Ready?</p>
-            <div className="side-checks">
-               {['FRONT', 'RIGHT', 'BACK', 'LEFT'].map(type => (
-                 <span key={type}>{type.charAt(0) + type.slice(1).toLowerCase()} {data.sides.some(s => s.sideType === type) ? '✓' : '—'}</span>
-               ))}
-            </div>
-            {mutable ? (
-              <ConfirmAction label="Lock & Start Stock Take" message="Ready to start?" onConfirm={finalize} primary={true} disabled={saving || data.sides.length === 0} />
-            ) : (
-              <strong className="done-state">✓ Started</strong>
-            )}
+          <div className="finalize-section card" style={{textAlign: 'center'}}>
+             <Link className="button button-primary" to={`/preparation/zones/${data.unit.zoneId}`}>Next</Link>
           </div>
         </section>
       )}
