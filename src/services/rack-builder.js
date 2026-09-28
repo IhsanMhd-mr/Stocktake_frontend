@@ -79,7 +79,20 @@ export async function applySideDesign(unitId, existingSide, config) {
   }
 }
 
-export async function addCustomBins(unitId, existingSide, sideType, count) {
+export async function addCustomBins(unitId, arg2, arg3, arg4) {
+  let existingSide, sideType, count;
+  if (typeof arg2 === 'string') {
+    existingSide = null;
+    sideType = arg2;
+    count = arg3;
+    const prep = await preparationApi.getPreparation(unitId);
+    existingSide = prep.sides.find(s => s.sideType === sideType) || null;
+  } else {
+    existingSide = arg2;
+    sideType = arg3;
+    count = arg4;
+  }
+  
   let sideId;
   if (!existingSide) {
     const displayOrder = ['FRONT', 'RIGHT', 'BACK', 'LEFT'].indexOf(sideType);

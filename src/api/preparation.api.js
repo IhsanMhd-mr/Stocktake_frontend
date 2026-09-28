@@ -13,6 +13,7 @@ export const preparationApi = {
   createUnit: (zoneId, payload) => apiRequest(`/zones/${zoneId}/units`, { method: 'POST', body: payload, headers: mutationKey() }),
   updateUnit: (id, payload) => apiRequest(`/units/${id}`, { method: 'PATCH', body: payload }),
   getPreparation: (unitId) => apiRequest(`/units/${unitId}/preparation`),
+  getOverview: () => apiRequest('/overview'),
   finalizeUnit: (unitId) => apiRequest(`/units/${unitId}/finalize`, { method: 'POST', body: {}, headers: mutationKey() }),
 
   createSide: (unitId, payload) => apiRequest(`/units/${unitId}/sides`, { method: 'POST', body: payload }),
@@ -33,13 +34,14 @@ export const preparationApi = {
 };
 
 export async function loadPreparationOverview() {
-  const zones = await preparationApi.listZones();
-  return Promise.all(zones.map(async (zone) => {
-    const units = await preparationApi.listUnits(zone.id);
-    const enrichedUnits = await Promise.all(units.map(async (unit) => ({
-      ...unit,
-      preparation: await preparationApi.getPreparation(unit.id)
-    })));
-    return { ...zone, units: enrichedUnits };
+  const data = await preparationApi.getOverview();
+  return data.zones.map(zone => ({
+    ...zone,
+    units: data.units
+      .filter(u => u.zoneId === zone.id)
+      .map(u => ({
+        ...u,
+        preparation: { summary: { binCount: u.binCount, sideCount: u.sideCount } }
+      }))
   }));
 }

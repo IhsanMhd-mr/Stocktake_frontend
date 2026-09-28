@@ -16,8 +16,7 @@ const DASHBOARD_ENTITIES = new Set(['ZONE', 'UNIT', 'SIDE', 'BIN', 'BAY', 'SHELF
 const emptyFilters = { zoneId: '', unitId: '', assignedUnitId: '', leaderId: '', operationalStatus: '', binStatus: '', search: '' };
 
 async function loadDashboard() {
-  const [units, assignedUnits, coverage] = await Promise.all([stockTakeApi.getUnits(), teamAssignmentApi.list(), stockTakeApi.getDashboardCoverage()]);
-  return { units, assignedUnits, coverage };
+  return await stockTakeApi.getMonitor();
 }
 
 export function AdminDashboardPage() {

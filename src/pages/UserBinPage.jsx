@@ -10,8 +10,7 @@ const blankItem = () => ({ localId: crypto.randomUUID(), itemName: '', sku: '', 
 export function UserBinPage() {
   const { assignedUnitId, binId } = useParams();
   const view = useRefreshableData(async () => {
-    const [assignedUnit, items, status] = await Promise.all([stockTakeApi.getMyAssignedUnit(assignedUnitId), stockTakeApi.getBinItems(binId), stockTakeApi.getBinStatus(binId)]);
-    return { assignedUnit, items, status };
+    return await stockTakeApi.getMyWorkBin(assignedUnitId, binId);
   }, [assignedUnitId, binId]);
   const [rows, setRows] = useState([]);
   const [statusMemo, setStatusMemo] = useState('');

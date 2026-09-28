@@ -7,8 +7,13 @@ import { useRefreshableData } from '../hooks/useRefreshableData.js';
 import { addCustomBins } from '../services/rack-builder.js';
 
 async function loadZone(zoneId) {
-  const [zone, units] = await Promise.all([preparationApi.getZone(zoneId), preparationApi.listUnits(zoneId)]);
-  return { zone, units: await Promise.all(units.map(async (unit) => ({ ...unit, preparation: await preparationApi.getPreparation(unit.id) }))) };
+  const data = await preparationApi.getOverview();
+  const zone = data.zones.find(z => String(z.id) === String(zoneId));
+  const units = data.units.filter(u => String(u.zoneId) === String(zoneId)).map(u => ({
+    ...u,
+    preparation: { summary: { binCount: u.binCount, sideCount: u.sideCount } }
+  }));
+  return { zone, units };
 }
 
 export function PreparationZonePage() {
@@ -41,7 +46,7 @@ export function PreparationZonePage() {
           unit={customBinsUnit} 
           saving={saving} 
           onCancel={() => setCustomBinsUnit(null)} 
-          onSave={({ position, count }) => mutate(() => addCustomBins(customBinsUnit.id, customBinsUnit.preparation.sides.find(s => s.sideType === position), position, count))} 
+          onSave={({ position, count }) => mutate(() => addCustomBins(customBinsUnit.id, position, count))} 
         />
       </section>
     )}

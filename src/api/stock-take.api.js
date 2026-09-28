@@ -3,7 +3,9 @@ import { apiRequest } from './api-client.js';
 export const stockTakeApi = {
   getMyAssignedUnits: async () => (await apiRequest('/stock-take/my-assigned-units')).assignedUnits,
   getMyAssignedUnit: (id) => apiRequest(`/stock-take/my-assigned-units/${id}`),
+  getMyWorkBin: (assignedUnitId, binId) => apiRequest(`/stock-take/my-assigned-units/${assignedUnitId}/bins/${binId}`),
   getUnits: async () => (await apiRequest('/stock-take/units')).units,
+  getMonitor: () => apiRequest('/stock-take/monitor'),
   getDashboardCoverage: () => apiRequest('/stock-take/dashboard-coverage'),
   getUnit: (id) => apiRequest(`/stock-take/units/${id}`),
   getBinItems: (id) => apiRequest(`/stock-take/bins/${id}/items`),
