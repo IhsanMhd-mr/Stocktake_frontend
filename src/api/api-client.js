@@ -20,7 +20,25 @@ export class ApiError extends Error {
   }
 }
 
+const WARMUP_COOLDOWN_MS = 5 * 60 * 1000;
+let lastWarmupTime = 0;
+
+function triggerWarmup() {
+  const now = Date.now();
+  if (now - lastWarmupTime < WARMUP_COOLDOWN_MS) return;
+  lastWarmupTime = now;
+  fetch(`${API_BASE_URL}/warmup`).catch(() => {});
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') triggerWarmup();
+  });
+}
+
 export async function apiRequest(path, options = {}) {
+  if (!options.skipWarmup) triggerWarmup();
+
   const token = readToken();
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
